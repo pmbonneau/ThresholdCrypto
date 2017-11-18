@@ -5,6 +5,12 @@
  */
 package thresholdcrypto;
 import commandLineArgsParser.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Random;
 
 /**
@@ -16,7 +22,7 @@ public class main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) 
+    public static void main(String[] args) throws IOException 
     {
         // Command line arguments parser usage is based from:
         // https://stackoverflow.com/questions/367706/how-to-parse-command-line-arguments-in-java
@@ -43,7 +49,7 @@ public class main {
         optModulo.setRequired(false);
         options.addOption(optModulo);
         
-        Option optRetreive = new Option("r", "retreive", true, "retreive secret");
+        Option optRetreive = new Option("r", "retreive", false, "retreive secret");
         optRetreive.setRequired(false);
         options.addOption(optRetreive);
         
@@ -82,30 +88,87 @@ public class main {
         }
 
         String Generate = cmd.getOptionValue("generate");   
-        int NumberOfCoefficients  = Integer.parseInt(cmd.getOptionValue("coefficient"));
+        int NumberOfCoefficients = 0;
+        if (GenerateSet == true)
+        {
+            NumberOfCoefficients = Integer.parseInt(cmd.getOptionValue("coefficient"));
+        }
         String NumberOfPoints  = cmd.getOptionValue("numberpts");
         String Secret = cmd.getOptionValue("secret");
         String Modulo = cmd.getOptionValue("modulo");
         String Retreive = cmd.getOptionValue("retreive");
         String[] Points = cmd.getOptionValues("points");
         
-        int PolynomialArray[] = new int[NumberOfCoefficients];
-        
-        for (int i = 0; i < NumberOfCoefficients - 1; i++)
+        if (GenerateSet == true)
         {
-            // Building the polynomial array from reverse to fit polynome degrees and array positions.
-            // Constante which is degree 0 is at PolynomialArray[0] and so.
-            PolynomialArray[PolynomialArray.length - 1 - i] = randomInteger(1,99);
+            int PolynomialArray[] = new int[NumberOfCoefficients];
+        
+            for (int i = 0; i < NumberOfCoefficients - 1; i++)
+            {
+                // Building the polynomial array from reverse to fit polynome degrees and array positions.
+                // Constante which is degree 0 is at PolynomialArray[0] and so.
+                PolynomialArray[PolynomialArray.length - 1 - i] = randomInteger(1,99);
+            }
+
+            PolynomialArray[0] = Integer.parseInt(Secret);
+            point[] pointsArray = getPoints(PolynomialArray, Integer.parseInt(NumberOfPoints));
+            writePointsArrayToFile(pointsArray);
         }
         
-        PolynomialArray[0] = Integer.parseInt(Secret);
-        String hack = "";
+        if (RetreiveSet == true)
+        {
+            point[] PointsArray = new point[Points.length];
+            for (int i = 0; i < Points.length; i++)
+            {
+                point NewPoint = new point(Points[i]);
+                PointsArray[i] = NewPoint;
+            }       
+        }
     }
     
     public static int randomInteger(int minimum, int maximum)
     {
         Random RandomGenerator = new Random();
         return RandomGenerator.nextInt((maximum - minimum) + 1) + minimum;
+    }
+    
+    public static point[] getPoints(int[] PolynomialArray, int NumberOfPoints)
+    {
+        point[] Points = new point[NumberOfPoints];
+        int Fx = 0;
+        for (int i = 1; i <= NumberOfPoints; i++)
+        {
+            for (int j = 1; j <= PolynomialArray.length - 1; j++)
+            {
+                Fx = Fx + PolynomialArray[j] ^ j;
+            }
+            Fx = Fx + PolynomialArray[0];
+            point NewPoint = new point(i,Fx);
+            Points[i - 1] = NewPoint;
+        }
+        return Points;
+    }
+    
+    public static void writePointsArrayToFile(point[] PointsArray) throws IOException
+    {
+        BufferedWriter PointsFile;
+        PointsFile = new BufferedWriter(new FileWriter("points.txt", true));
+        for (int i = 0; i < PointsArray.length; i++)
+        {
+            PointsFile.write(PointsArray[i].toString());
+        }
+        PointsFile.close();
+    }
+    
+    public static int modInverse(int a, int n)
+    {
+        a = a%n;
+        for (int x=1; x<n; x++)
+        if ((a*x) % n == 1)
+        {
+            return x;
+        }
+        return 0;
     }
     
 }
