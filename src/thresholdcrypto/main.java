@@ -122,8 +122,62 @@ public class main {
             {
                 point NewPoint = new point(Points[i]);
                 PointsArray[i] = NewPoint;
-            }       
+            }
+            
+            int RetreivedSecret = (calculateL0(PointsArray, Integer.parseInt(Modulo)) + calculateL1(PointsArray, Integer.parseInt(Modulo)) + calculateL2(PointsArray, Integer.parseInt(Modulo)))%Integer.parseInt(Modulo);
+            System.out.println(Integer.toString(RetreivedSecret));
         }
+    }
+    
+    public static int calculateL0(point[] PointsArray, int Modulo)
+    {
+        int Y0 = PointsArray[0].getY();
+        int L0 = (0 - PointsArray[1].getX() * (0 - PointsArray[2].getX()));
+        int Fact = (PointsArray[0].getX() - PointsArray[1].getX())*(PointsArray[0].getX() - PointsArray[2].getX());
+        if (Fact < 0)
+        {
+            Fact = Modulo + Fact;
+        }
+        
+        int Inverse = modInverse(Fact,Modulo);
+        
+        int Result = (Y0 * L0 * Inverse) % 127;
+        
+        return Result;
+    }
+    
+    public static int calculateL1(point[] PointsArray, int Modulo)
+    {
+        int Y1 = PointsArray[1].getY();
+        int L1 = (1 - PointsArray[0].getX() * (1 - PointsArray[2].getX()));
+        int Fact = (PointsArray[1].getX() - PointsArray[0].getX())*(PointsArray[1].getX() - PointsArray[2].getX());
+        if (Fact < 0)
+        {
+            Fact = Modulo + Fact;
+        }
+        
+        int Inverse = modInverse(Fact,Modulo);
+        
+        int Result = (Y1 * L1 * Inverse) % 127;
+        
+        return Result;
+    }
+    
+    public static int calculateL2(point[] PointsArray, int Modulo)
+    {
+        int Y2 = PointsArray[2].getY();
+        int L2 = (2 - PointsArray[0].getX() * (2 - PointsArray[1].getX()));
+        int Fact = (PointsArray[2].getX() - PointsArray[0].getX())*(PointsArray[2].getX() - PointsArray[1].getX());
+        if (Fact < 0)
+        {
+            Fact = Modulo + Fact;
+        }
+                
+        int Inverse = modInverse(Fact,Modulo);
+        
+        int Result = (Y2 * L2 * Inverse) % 127;
+        
+        return Result;
     }
     
     public static int randomInteger(int minimum, int maximum)
@@ -170,5 +224,4 @@ public class main {
         }
         return 0;
     }
-    
 }
