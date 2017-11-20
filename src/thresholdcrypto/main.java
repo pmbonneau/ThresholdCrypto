@@ -15,7 +15,7 @@ import java.util.Random;
 
 /**
  *
- * @author root
+ * @author Pierre-Marc Bonneau
  */
 public class main {
 
@@ -74,15 +74,18 @@ public class main {
         }
         
         boolean GenerateSet = false;
+        
         boolean RetreiveSet = false;
         for (int i = 0; i < args.length; i++)
         {
             if (args[i].equals("-g"))
             {
+                // Check if -g arg is set
                 GenerateSet = true;
             }
             if (args[i].equals("-r"))
             {
+                // Check if -r arg is set
                 RetreiveSet = true;
             }
         }
@@ -110,7 +113,10 @@ public class main {
                 PolynomialArray[PolynomialArray.length - 1 - i] = randomInteger(1,99);
             }
 
+            // Secret (constante) is stored at index 0
             PolynomialArray[0] = Integer.parseInt(Secret);
+            
+            // Create random points from polynome
             point[] pointsArray = getPoints(PolynomialArray, Integer.parseInt(NumberOfPoints));
             writePointsArrayToFile(pointsArray);
         }
@@ -118,15 +124,27 @@ public class main {
         if (RetreiveSet == true)
         {
             point[] PointsArray = new point[Points.length];
+            
+            // Create point objects from points passed as arguments
             for (int i = 0; i < Points.length; i++)
             {
                 point NewPoint = new point(Points[i]);
                 PointsArray[i] = NewPoint;
             }
             
-            int RetreivedSecret = (calculateL0(PointsArray, Integer.parseInt(Modulo)) + calculateL1(PointsArray, Integer.parseInt(Modulo)) + calculateL2(PointsArray, Integer.parseInt(Modulo)))%Integer.parseInt(Modulo);
+            // Applying Lagrange polynomial interpolation to retreive secret from points
+            int RetreivedSecret = calculateLagrangePolynomialInterpolation(PointsArray, Integer.parseInt(Modulo));
             System.out.println(Integer.toString(RetreivedSecret));
         }
+    }
+    
+    public static int calculateLagrangePolynomialInterpolation(point[] PointsArray, int Modulo)
+    {
+        int L0 = calculateL0(PointsArray, Modulo);
+        int L1 = calculateL1(PointsArray, Modulo);
+        int L2 = calculateL2(PointsArray, Modulo);
+        
+        return (L0 + L1 + L2) % Modulo;
     }
     
     public static int calculateL0(point[] PointsArray, int Modulo)
@@ -180,16 +198,20 @@ public class main {
         return Result;
     }
     
+    // Generate a random integer from a range
     public static int randomInteger(int minimum, int maximum)
     {
         Random RandomGenerator = new Random();
         return RandomGenerator.nextInt((maximum - minimum) + 1) + minimum;
     }
     
+    // This method creates NumberOfPoints point objects from a given polynome
     public static point[] getPoints(int[] PolynomialArray, int NumberOfPoints)
     {
         point[] Points = new point[NumberOfPoints];
         int Fx = 0;
+        
+        // Does something like (1,f(1)), (2,f(2)), (3,f(3)), (4,f(4)) and (5,f(5)) for NumberOfPoints = 5
         for (int i = 1; i <= NumberOfPoints; i++)
         {
             for (int j = 1; j <= PolynomialArray.length - 1; j++)
@@ -197,7 +219,11 @@ public class main {
                 Fx = Fx + PolynomialArray[j] ^ j;
             }
             Fx = Fx + PolynomialArray[0];
-            point NewPoint = new point(i,Fx);
+            
+            // Result modulus 31
+            point NewPoint = new point(i,Fx % 31);
+            
+            // Place the new point object in the array
             Points[i - 1] = NewPoint;
         }
         return Points;
@@ -214,6 +240,7 @@ public class main {
         PointsFile.close();
     }
     
+    // Calculate modulus inverse
     public static int modInverse(int a, int n)
     {
         a = a%n;
