@@ -119,6 +119,11 @@ public class main {
             // Create random points from polynome
             point[] pointsArray = getPoints(PolynomialArray, Integer.parseInt(NumberOfPoints));
             writePointsArrayToFile(pointsArray);
+            
+            for (int i = 0; i < pointsArray.length; i++)
+            {
+                System.out.println(pointsArray[i].toString());
+            } 
         }
         
         if (RetreiveSet == true)
@@ -134,7 +139,7 @@ public class main {
             
             // Applying Lagrange polynomial interpolation to retreive secret from points
             int RetreivedSecret = calculateLagrangePolynomialInterpolation(PointsArray, Integer.parseInt(Modulo));
-            System.out.println(Integer.toString(RetreivedSecret));
+            System.out.println("Retreived secret is: " + Integer.toString(RetreivedSecret));
         }
     }
     
